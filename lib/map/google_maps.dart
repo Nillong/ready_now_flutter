@@ -4,8 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ready_now_demo/entity/store_entity.dart';
+import 'package:intl/intl.dart';
+
+
 
 class GoogleMaps extends StatefulWidget {
+
   @override
   _GoogleMapsState createState() => _GoogleMapsState();
 }
@@ -40,27 +46,47 @@ class _GoogleMapsState extends State<GoogleMaps> {
 
   void _addMarkers() {
     markers.clear();
-    markers.add(Marker(
-      markerId: MarkerId("aaa"),
-      position: LatLng(1.2984458,103.7885697),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-      infoWindow: InfoWindow(
-          title: "woobbee", snippet: "空席あり"),
-      onTap: (){
-        _onMarkerTapped(LatLng(1.2755197,103.8401771));
-      },
-    ));
-    markers.add(Marker(
-      markerId: MarkerId("bbbb"),
-      position: LatLng(1.2980141,103.7883946),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-      infoWindow: InfoWindow(
-          title: "Starbucks", snippet: "空席なし"),
-      onTap: (){
-        _onMarkerTapped(LatLng(1.2980141,103.7883946));
-      },
-    ));
+    this._getStoreList().then((list){
+      setState(() {
+        list.forEach((data){
+          Marker mark = createMarker(data);
+          markers.add(mark);
+        });
+      });
+    });
   }
+
+  Marker createMarker(StoreEntry entity) {
+    BitmapDescriptor icon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+    String snippet = '空席なし';
+    if (entity.hasAvailableSeats){
+      icon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+      snippet = '空席あり';
+    }
+    snippet = snippet + " (" + new DateFormat('kk:mm').format(entity.updateDatetime) + " 更新)";
+    Marker mark = Marker(
+      markerId: MarkerId(entity.key),
+      position: LatLng(entity.latitude, entity.longitude),
+      icon: icon,
+      infoWindow: InfoWindow(
+          title: entity.storeName, snippet: snippet),
+      onTap: (){
+        _onMarkerTapped(LatLng(entity.latitude, entity.longitude));
+      },
+    );
+    return mark;
+  }
+
+
+  Future<List<StoreEntry>> _getStoreList() async{
+    List<StoreEntry> list = <StoreEntry>[];
+    QuerySnapshot querySnapshot = await Firestore.instance.collection("store").getDocuments();
+    querySnapshot.documents.forEach((f){
+      list.add(StoreEntry.fromSnapShot(f));
+    });
+    return list;
+  }
+
 
   void _onMarkerTapped(LatLng latLng){
 
