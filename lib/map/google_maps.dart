@@ -23,6 +23,9 @@ class _GoogleMapsState extends State<GoogleMaps> {
 
   Location _locationService = new Location();
   List<Marker> markers = <Marker>[];
+
+  BitmapDescriptor activeMarker = BitmapDescriptor.defaultMarker;
+  BitmapDescriptor unActiveMarker = BitmapDescriptor.defaultMarker;
   String error;
 
 
@@ -45,6 +48,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
   }
 
   void _addMarkers() {
+    this._setIcons();
     markers.clear();
     this._getStoreList().then((list){
       setState(() {
@@ -56,11 +60,16 @@ class _GoogleMapsState extends State<GoogleMaps> {
     });
   }
 
+  void _setIcons(){
+    unActiveMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+    activeMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+  }
+
   Marker createMarker(StoreEntry entity) {
-    BitmapDescriptor icon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+    BitmapDescriptor icon = unActiveMarker;
     String snippet = '空席なし';
     if (entity.hasAvailableSeats){
-      icon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+      icon = activeMarker;
       snippet = '空席あり';
     }
     snippet = snippet + " (" + new DateFormat('kk:mm').format(entity.updateDatetime) + " 更新)";
