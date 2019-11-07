@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:ready_now_demo/service/user_log_service.dart';
 import 'map/google_maps.dart';
+import 'package:device_info/device_info.dart';
 
 void main() => runApp(MyApp());
 
@@ -174,6 +176,7 @@ class ReadyNowState extends State<ReadyNow> {
   }
 
   void _searchMap(){
+    new UserLogService().execute();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
           builder: (BuildContext context) {
