@@ -10,14 +10,11 @@ class ReadyNowState extends State<ReadyNow> {
   List<String> _numOfPeopleList =  <String>['1人', '2人', '3人', '4人'];
   String _numOfPeopleValue = '1人';
 
-  List<String> _gpsAreaList =  <String>['100m以内', '200m以内', '300m以内'];
-  String _gpsAreaValue = '100m以内';
-
-
-
   bool _optPlug = false;
   bool _optWifi = false;
   var selectGpsArea = [true, false, false];
+
+  Color themeColor = Colors.blueGrey;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +57,7 @@ class ReadyNowState extends State<ReadyNow> {
                       ),
                     ),
                     CheckboxListTile(
+                      activeColor: themeColor,
                       title: Text('現在地を使う'),
                       onChanged: _useHere,
                       value: _isUseHere,
@@ -128,6 +126,7 @@ class ReadyNowState extends State<ReadyNow> {
                             margin: EdgeInsets.all(20.0),
                           ),
                           CheckboxListTile(
+                            activeColor: themeColor,
                             title: Text('電源コンセント'),
                             onChanged: (e){setState(() {
                               _optPlug = e;
@@ -136,6 +135,7 @@ class ReadyNowState extends State<ReadyNow> {
                             controlAffinity: ListTileControlAffinity.leading,
                           ),
                           CheckboxListTile(
+                            activeColor: themeColor,
                             title: Text('フリーwifi'),
                             onChanged: (e){setState(() {
                               _optWifi = e;
@@ -154,10 +154,9 @@ class ReadyNowState extends State<ReadyNow> {
             Container(
               padding: EdgeInsets.all(16.0),
               child: ButtonTheme(
-
                 minWidth: double.infinity,
                 child: RaisedButton(
-                  color: Colors.blueGrey,
+                  color: themeColor,
                   textColor: Colors.white,
                   onPressed: _searchMap,
                   child: const Text(
