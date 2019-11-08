@@ -213,7 +213,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
                                   style: TextStyle(color: Colors.black38),)
                                 ],
                               ),
-                              SizedBox(height: 20.0,),
+                              SizedBox(height: 16.0,),
                               FlatButton(
                                 textTheme: ButtonTextTheme.primary,
                                 child: Row(
@@ -221,6 +221,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
                                     Icon(
                                       Icons.map
                                     ),
+                                    SizedBox(width: 8.0,),
                                     Text('Open Map')
                                   ],
                                 ),
