@@ -7,6 +7,8 @@ import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ready_now_demo/entity/store_entity.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 
 
@@ -23,6 +25,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
 
   Location _locationService = new Location();
   List<Marker> markers = <Marker>[];
+  List<Widget> boxList = <Widget>[];
 
   BitmapDescriptor activeMarker = BitmapDescriptor.defaultMarker;
   BitmapDescriptor unActiveMarker = BitmapDescriptor.defaultMarker;
@@ -50,11 +53,14 @@ class _GoogleMapsState extends State<GoogleMaps> {
   void _addMarkers() {
     this._setIcons();
     markers.clear();
+    boxList.clear();
     this._getStoreList().then((list){
       setState(() {
         list.forEach((data){
           Marker mark = createMarker(data);
           markers.add(mark);
+          Widget box = _box(data.imageUrl, data.latitude, data.longitude, data.storeName);
+          boxList.add(box);
         });
       });
     });
@@ -62,7 +68,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
 
   void _setIcons(){
     unActiveMarker = BitmapDescriptor.defaultMarkerWithHue(10);
-    activeMarker = BitmapDescriptor.defaultMarkerWithHue(110);
+    activeMarker = BitmapDescriptor.defaultMarkerWithHue(120);
   }
 
   Marker createMarker(StoreEntry entity) {
@@ -80,7 +86,9 @@ class _GoogleMapsState extends State<GoogleMaps> {
       infoWindow: InfoWindow(
           title: entity.storeName,
           snippet: snippet,
-          onTap: (){},
+          onTap: () {
+            launch(entity.mapUrl);
+          },
       ),
       onTap: (){
         _onMarkerTapped(entity.storeName, LatLng(entity.latitude, entity.longitude));
@@ -111,20 +119,89 @@ class _GoogleMapsState extends State<GoogleMaps> {
       );
     } else {
       return MaterialApp(
-        home: GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: LatLng(currentLocation.latitude, currentLocation.longitude),
-            zoom: 17.0,
-          ),
-          myLocationEnabled: true,
-          myLocationButtonEnabled: true,
-          markers: Set<Marker>.of(markers),
-          rotateGesturesEnabled: true,
-          mapToolbarEnabled: true,
-        ),
+        home: Stack(
+          children: <Widget>[
+            GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: LatLng(currentLocation.latitude, currentLocation.longitude),
+                zoom: 17.0,
+              ),
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              markers: Set<Marker>.of(markers),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 20.0),
+                height: 150.0,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: boxList.map((Widget box) {
+                    return box;
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],)
       );
     }
+  }
+
+  Widget _box(String _imageUrl, double lat, double long, String name){
+    return Stack(
+      children: <Widget>[
+        SizedBox(width: 10.0),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child:         GestureDetector(
+            onTap: (){
+              _gotoLocation(lat, long);
+            },
+            child: Container(
+              child: FittedBox(
+                child: Material(
+                  color: Colors.white,
+                  elevation: 14.0,
+                  borderRadius: BorderRadius.circular(12.0),
+                  shadowColor: Color(0x802196f3),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Container(
+                        width: 180,
+                        height: 200,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12.0),
+                          child: Image(
+                            fit: BoxFit.fill,
+                            image: NetworkImage(_imageUrl),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Text(name),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+
+        ),
+      ],
+    );
+  }
+
+
+  Future<void> _gotoLocation(double lat,double long) async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(lat, long), zoom: 20)));
   }
 
   void initPlatformState() async {

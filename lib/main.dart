@@ -32,9 +32,6 @@ class ReadyNowState extends State<ReadyNow> {
     _showFeedBackDialog();
   }
 
-  void didPop() {
-    debugPrint("didPop ${runtimeType}");
-  }
 
   @override
   Widget build(BuildContext context) {
