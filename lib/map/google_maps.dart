@@ -201,7 +201,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
 
   Future<void> _gotoLocation(double lat,double long) async {
     final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(lat, long), zoom: 20)));
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(lat, long), zoom: 18)));
   }
 
   void initPlatformState() async {
