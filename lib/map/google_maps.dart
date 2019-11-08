@@ -31,6 +31,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
   BitmapDescriptor unActiveMarker = BitmapDescriptor.defaultMarker;
   String error;
 
+  ScrollController _scrollController = new ScrollController();
 
   @override
   void initState() {
@@ -56,10 +57,11 @@ class _GoogleMapsState extends State<GoogleMaps> {
     boxList.clear();
     this._getStoreList().then((list){
       setState(() {
+        int i = 0;
         list.forEach((data){
-          Marker mark = createMarker(data);
+          Marker mark = createMarker(data, i++);
           markers.add(mark);
-          Widget box = _box(data.imageUrl, data.latitude, data.longitude, data.storeName);
+          Widget box = _box(data);
           boxList.add(box);
         });
       });
@@ -71,14 +73,21 @@ class _GoogleMapsState extends State<GoogleMaps> {
     activeMarker = BitmapDescriptor.defaultMarkerWithHue(120);
   }
 
-  Marker createMarker(StoreEntry entity) {
-    BitmapDescriptor icon = unActiveMarker;
+  String getCaption(bool hasSeats, DateTime dateTime){
     String snippet = '空席なし';
-    if (entity.hasAvailableSeats){
-      icon = activeMarker;
+    if (hasSeats){
       snippet = '空席あり';
     }
-    snippet = snippet + " (" + new DateFormat.Hm().format(entity.updateDatetime) + " 更新)";
+    snippet = snippet + " (" + new DateFormat.Hm().format(dateTime) + " 更新)";
+    return snippet;
+  }
+
+  Marker createMarker(StoreEntry entity, int i) {
+    BitmapDescriptor icon = unActiveMarker;
+    String snippet = getCaption(entity.hasAvailableSeats, entity.updateDatetime);
+    if (entity.hasAvailableSeats){
+      icon = activeMarker;
+    }
     Marker mark = Marker(
       markerId: MarkerId(entity.key),
       position: LatLng(entity.latitude, entity.longitude),
@@ -92,6 +101,11 @@ class _GoogleMapsState extends State<GoogleMaps> {
       ),
       onTap: (){
         _onMarkerTapped(entity.storeName, LatLng(entity.latitude, entity.longitude));
+        _scrollController.animateTo(
+          i * 268.0,
+          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 300),
+        );
       },
     );
     return mark;
@@ -138,6 +152,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
                 height: 150.0,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
+                  controller: _scrollController,
                   children: boxList.map((Widget box) {
                     return box;
                   }).toList(),
@@ -149,15 +164,15 @@ class _GoogleMapsState extends State<GoogleMaps> {
     }
   }
 
-  Widget _box(String _imageUrl, double lat, double long, String name){
+  Widget _box(StoreEntry data){
     return Stack(
       children: <Widget>[
         SizedBox(width: 10.0),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child:         GestureDetector(
+          child: GestureDetector(
             onTap: (){
-              _gotoLocation(lat, long);
+              _gotoLocation(data.latitude, data.longitude);
             },
             child: Container(
               child: FittedBox(
@@ -165,7 +180,6 @@ class _GoogleMapsState extends State<GoogleMaps> {
                   color: Colors.white,
                   elevation: 14.0,
                   borderRadius: BorderRadius.circular(12.0),
-                  shadowColor: Color(0x802196f3),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
@@ -176,14 +190,44 @@ class _GoogleMapsState extends State<GoogleMaps> {
                           borderRadius: BorderRadius.circular(12.0),
                           child: Image(
                             fit: BoxFit.fill,
-                            image: NetworkImage(_imageUrl),
+                            image: NetworkImage(data.imageUrl),
                           ),
                         ),
                       ),
                       Container(
                         child: Padding(
                           padding: EdgeInsets.all(12.0),
-                          child: Text(name),
+                          child: Column(
+                            children: <Widget>[
+                              Text(data.storeName,
+                                textAlign: TextAlign.left,
+                                style: new TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Icon(Icons.location_on,
+                                    color: data.hasAvailableSeats ? Colors.green : Colors.red,
+                                    size: 16.0,),
+                                  SizedBox(width: 10.0,),
+                                  Text(getCaption(data.hasAvailableSeats, data.updateDatetime),
+                                  style: TextStyle(color: Colors.black38),)
+                                ],
+                              ),
+                              SizedBox(height: 20.0,),
+                              FlatButton(
+                                textTheme: ButtonTextTheme.primary,
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.map
+                                    ),
+                                    Text('Open Map')
+                                  ],
+                                ),
+                                onPressed: () => launch(data.mapUrl),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ],
