@@ -61,8 +61,8 @@ class _GoogleMapsState extends State<GoogleMaps> {
   }
 
   void _setIcons(){
-    unActiveMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
-    activeMarker = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
+    unActiveMarker = BitmapDescriptor.defaultMarkerWithHue(10);
+    activeMarker = BitmapDescriptor.defaultMarkerWithHue(110);
   }
 
   Marker createMarker(StoreEntry entity) {
@@ -72,15 +72,18 @@ class _GoogleMapsState extends State<GoogleMaps> {
       icon = activeMarker;
       snippet = '空席あり';
     }
-    snippet = snippet + " (" + new DateFormat('kk:mm').format(entity.updateDatetime) + " 更新)";
+    snippet = snippet + " (" + new DateFormat.Hm().format(entity.updateDatetime) + " 更新)";
     Marker mark = Marker(
       markerId: MarkerId(entity.key),
       position: LatLng(entity.latitude, entity.longitude),
       icon: icon,
       infoWindow: InfoWindow(
-          title: entity.storeName, snippet: snippet),
+          title: entity.storeName,
+          snippet: snippet,
+          onTap: (){},
+      ),
       onTap: (){
-        _onMarkerTapped(LatLng(entity.latitude, entity.longitude));
+        _onMarkerTapped(entity.storeName, LatLng(entity.latitude, entity.longitude));
       },
     );
     return mark;
@@ -96,9 +99,8 @@ class _GoogleMapsState extends State<GoogleMaps> {
     return list;
   }
 
-
-  void _onMarkerTapped(LatLng latLng){
-
+  void _onMarkerTapped(String name, LatLng latLng){
+    print(name);
   }
 
   @override
@@ -116,7 +118,10 @@ class _GoogleMapsState extends State<GoogleMaps> {
             zoom: 17.0,
           ),
           myLocationEnabled: true,
+          myLocationButtonEnabled: true,
           markers: Set<Marker>.of(markers),
+          rotateGesturesEnabled: true,
+          mapToolbarEnabled: true,
         ),
       );
     }
