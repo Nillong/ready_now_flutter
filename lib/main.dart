@@ -30,6 +30,7 @@ class ReadyNowState extends State<ReadyNow> {
   void initState(){
     //アプリ起動時に一度だけ実行される
     _showFeedBackDialog();
+    userInfo.createOperationLog(UserOperation.openApp);
   }
 
 
@@ -211,14 +212,13 @@ class ReadyNowState extends State<ReadyNow> {
             new FlatButton(
               child: new Text("あとで回答する"),
               onPressed: () {
+                userInfo.createOperationLog(UserOperation.clickFeedBackLater);
                 Navigator.of(context).pop();
               },
             ),
             new FlatButton(
               child: new Text("今すぐ回答する"),
-              onPressed: () {
-                _openFeedBackForm();
-              },
+              onPressed: this._openFeedBackForm
             ),
           ],
         );
@@ -227,6 +227,7 @@ class ReadyNowState extends State<ReadyNow> {
   }
 
   void _openFeedBackForm(){
+    userInfo.createOperationLog(UserOperation.openFeedBackUrl);
     String url = settingManager.getValue(CommonSettingDocId.feedback, 'url');
     launch(url).then((e){
       if (e){
@@ -238,6 +239,7 @@ class ReadyNowState extends State<ReadyNow> {
 
   void _searchMap(){
     feedbackTimer.cancel();
+    userInfo.createOperationLog(UserOperation.openMap);
     userInfo.updateSearchCount();
     Navigator.of(context).push(
       MaterialPageRoute<void>(

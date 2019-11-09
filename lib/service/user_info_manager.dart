@@ -5,7 +5,8 @@ import 'package:intl/intl.dart';
 class UserInfoManager{
 
   static final USER_STATUS = 'userStatus';
-  static final USER_LOG = 'userLog';
+  static final USER_OPE_HISTORT = 'userOperationHistory';
+  static final USER_ACC_HISTORT = 'userAccessMapHistory';
 
   String deviceId = null;
   int searchCount = null;
@@ -17,7 +18,7 @@ class UserInfoManager{
 
   UserInfoManager(){
     _getDeviceId().then((info){
-      this.deviceId = info.androidId;
+      this.deviceId = info.model + ':' + info.androidId;
       _setUserStatus();
     });
   }
@@ -84,42 +85,32 @@ class UserInfoManager{
         .setData({"searchCount": searchCount, "feedBackStatus" : feedBackStatusValue});
   }
 
-  void _createOperationLog(UserOperation operation) async {
-    String ope = UserOperationHelper.getValue(operation);
+  void createOperationLog(UserOperation operation) async {
     DateTime now = DateTime.now();
     String date = new DateFormat("yyyy.MM.dd (EEE) HH:mm:ss").format(now);
     await Firestore.instance
-        .collection(USER_LOG)
-        .document((now.millisecondsSinceEpoch).toString() + " - " + deviceId)
-        .setData({"operation": ope, "dateTime": date});
+        .collection(USER_OPE_HISTORT)
+        .document((now.millisecondsSinceEpoch).toString() + "-" + deviceId)
+        .setData({"operation": operation.toString(), "dateTimesStr": date, "dateTime": now.millisecondsSinceEpoch, "deviceId" : deviceId});
+  }
+
+  void createAccessMap(String key, String name, GeoPoint storePoint, GeoPoint userPoint) async {
+    DateTime now = DateTime.now();
+    String date = new DateFormat("yyyy.MM.dd (EEE) HH:mm:ss").format(now);
+    await Firestore.instance
+        .collection(USER_ACC_HISTORT)
+        .document((now.millisecondsSinceEpoch).toString() + "-" + deviceId)
+        .setData({"storeKey": key, "storeName": name, "storeGeoPoint": storePoint, "userGeoPoint": userPoint, "dateTimesStr": date, "dateTime": now.millisecondsSinceEpoch, "deviceId" : deviceId});
   }
 }
 
 enum UserOperation {
   openApp,
   openMap,
-  clickMapPoint,
   openFeedBackUrl,
+  openExternalMapApp,
+  clickMapPoint,
   clickFeedBackLater,
-}
-
-class UserOperationHelper {
-  static String getValue(UserOperation status) {
-    switch (status) {
-      case UserOperation.openApp:
-        return 'アプリを開く';
-      case UserOperation.openMap:
-        return 'マップを開く';
-      case UserOperation.clickMapPoint:
-        return 'カフェを選択';
-      case UserOperation.openFeedBackUrl:
-        return 'FeedBackのURLを開く';
-      case UserOperation.clickFeedBackLater:
-        return 'FeedBackを後で行う';
-      default:
-        return '';
-    }
-  }
 }
 
 enum FeedBackStatus {

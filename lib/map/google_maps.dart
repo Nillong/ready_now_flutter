@@ -7,6 +7,7 @@ import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ready_now_demo/entity/store_entity.dart';
 import 'package:intl/intl.dart';
+import 'package:ready_now_demo/service/user_info_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 
@@ -20,6 +21,8 @@ class GoogleMaps extends StatefulWidget {
 
 class _GoogleMapsState extends State<GoogleMaps> {
   LocationData currentLocation;
+
+  UserInfoManager userInfo = UserInfoManager.instance;
 
   // StreamSubscription<LocationData> locationSubscription;
 
@@ -96,10 +99,11 @@ class _GoogleMapsState extends State<GoogleMaps> {
           title: entity.storeName,
           snippet: snippet,
           onTap: () {
-            launch(entity.mapUrl);
+            openExtarnalMap(entity);
           },
       ),
       onTap: (){
+        userInfo.createOperationLog(UserOperation.clickMapPoint);
         _onMarkerTapped(entity.storeName, LatLng(entity.latitude, entity.longitude));
         _scrollController.animateTo(
           i * 268.0,
@@ -225,7 +229,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
                                     Text('Open Map')
                                   ],
                                 ),
-                                onPressed: () => launch(data.mapUrl),
+                                onPressed: () => this.openExtarnalMap(data),
                               )
                             ],
                           ),
@@ -237,7 +241,6 @@ class _GoogleMapsState extends State<GoogleMaps> {
               ),
             ),
           )
-
         ),
       ],
     );
@@ -245,6 +248,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
 
 
   Future<void> _gotoLocation(double lat,double long) async {
+    userInfo.createOperationLog(UserOperation.clickMapPoint);
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(lat, long), zoom: 18)));
   }
@@ -265,5 +269,13 @@ class _GoogleMapsState extends State<GoogleMaps> {
     setState(() {
       currentLocation = myLocation;
     });
+  }
+
+  void openExtarnalMap(StoreEntry entity) {
+    userInfo.createOperationLog(UserOperation.openExternalMapApp);
+    userInfo.createAccessMap(entity.key, entity.storeName,
+        GeoPoint(entity.latitude, entity.longitude),
+        GeoPoint(currentLocation.latitude, currentLocation.longitude));
+    launch(entity.mapUrl);
   }
 }
