@@ -1,6 +1,7 @@
 import 'package:device_info/device_info.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 
 class UserInfoManager{
 
@@ -17,15 +18,30 @@ class UserInfoManager{
   static final UserInfoManager instance = new UserInfoManager();
 
   UserInfoManager(){
-    _getDeviceId().then((info){
-      this.deviceId = info.model + ':' + info.androidId;
-      _setUserStatus();
-    });
+    switch (Platform.operatingSystem){
+      case 'android' :
+        _getAndroidDeviceId().then((info){
+          this.deviceId = info.model + ':' + info.androidId;
+          _setUserStatus();
+        });
+        break;
+      case 'ios' :
+        _getIosInfo().then((info){
+          this.deviceId = info.model + ':' + info.identifierForVendor;
+          _setUserStatus();
+        });
+        break;
+    }
   }
 
-  Future<AndroidDeviceInfo> _getDeviceId() async{
+  Future<AndroidDeviceInfo> _getAndroidDeviceId() async{
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     return await deviceInfo.androidInfo;
+  }
+
+  Future<IosDeviceInfo> _getIosInfo() async{
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    return await deviceInfo.iosInfo;
   }
 
   void _setUserStatus() async{
