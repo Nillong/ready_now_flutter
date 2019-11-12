@@ -26,9 +26,9 @@ dependencies:
   flutter_typeahead: ^1.7.0
   google_maps_flutter: ^0.5.21+8
   location: ^2.3.5
-  firebase_core: ^0.4.0+9  # add dependency for Firebase Core
-  cloud_firestore: ^0.12.9+6
-  intl: 0.16.0
+  firebase_core: ^0.4.1  # add dependency for Firebase Core
+  cloud_firestore: ^0.12.10
+  intl: ^0.16.0
   device_info: ^0.4.0+2
   url_launcher: ^5.2.5
 
