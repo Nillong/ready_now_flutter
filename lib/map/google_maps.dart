@@ -28,6 +28,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
 
   Location _locationService = new Location();
   List<Marker> markers = <Marker>[];
+
   List<Widget> boxList = <Widget>[];
 
   BitmapDescriptor activeMarker = BitmapDescriptor.defaultMarker;
@@ -106,7 +107,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
         userInfo.createOperationLog(UserOperation.clickMapPoint);
         _onMarkerTapped(entity.storeName, LatLng(entity.latitude, entity.longitude));
         _scrollController.animateTo(
-          i * 268.0,
+          i * 286.0,
           curve: Curves.easeOut,
           duration: const Duration(milliseconds: 300),
         );
@@ -169,9 +170,8 @@ class _GoogleMapsState extends State<GoogleMaps> {
   }
 
   Widget _box(StoreEntry data){
-    return Stack(
+    return Row(
       children: <Widget>[
-        SizedBox(width: 10.0),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
@@ -179,6 +179,8 @@ class _GoogleMapsState extends State<GoogleMaps> {
               _gotoLocation(data.latitude, data.longitude);
             },
             child: Container(
+              height: 200,
+              width: 270,
               child: FittedBox(
                 child: Material(
                   color: Colors.white,
@@ -199,6 +201,7 @@ class _GoogleMapsState extends State<GoogleMaps> {
                         ),
                       ),
                       Container(
+                        width: 220,
                         child: Padding(
                           padding: EdgeInsets.all(12.0),
                           child: Column(
@@ -208,25 +211,31 @@ class _GoogleMapsState extends State<GoogleMaps> {
                                 style: new TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                               ),
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
                                   Icon(Icons.location_on,
                                     color: data.hasAvailableSeats ? Colors.green : Colors.red,
-                                    size: 16.0,),
+                                    size: 20.0,),
                                   SizedBox(width: 10.0,),
                                   Text(getCaption(data.hasAvailableSeats, data.updateDatetime),
-                                  style: TextStyle(color: Colors.black38),)
+                                  style: TextStyle(fontSize: 14.0,
+                                      color: Colors.black38),)
                                 ],
                               ),
                               SizedBox(height: 16.0,),
                               FlatButton(
                                 textTheme: ButtonTextTheme.primary,
                                 child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
                                     Icon(
-                                      Icons.map
+                                      Icons.map,
+                                      size: 18,
                                     ),
                                     SizedBox(width: 8.0,),
-                                    Text('Open Map')
+                                    Text('Open Map',
+                                      style: new TextStyle(fontSize: 18.0,),
+                                    )
                                   ],
                                 ),
                                 onPressed: () => this.openExtarnalMap(data),

@@ -181,8 +181,7 @@ class ReadyNowState extends State<ReadyNow> {
                       style: TextStyle(fontSize: 20)
                   ),
                 ),
-              )
-              ,
+              ),
             ),
           ],
         ),
